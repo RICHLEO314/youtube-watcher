@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube学习视频下载器</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 应用主容器 -->
+    <div id="app">
+        <!-- 页面头部 -->
+        <header class="app-header">
+            <div class="header-content">
+                <!-- Logo区域 -->
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i data-feather="download-cloud"></i>
+                    </div>
+                    <h1 class="logo-text">YouTube学习下载器</h1>
+                </div>
+                
+                <!-- 导航标签 -->
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-tab="download">
+                        <i data-feather="download"></i>
+                        <span>下载</span>
+                    </button>
+                    <button class="nav-tab" data-tab="queue">
+                        <i data-feather="list"></i>
+                        <span>队列</span>
+                    </button>
+                    <button class="nav-tab" data-tab="history">
+                        <i data-feather="clock"></i>
+                        <span>历史</span>
+                    </button>
+                    <button class="nav-tab" data-tab="settings">
+                        <i data-feather="settings"></i>
+                        <span>设置</span>
+                    </button>
+                </nav>
+                
+                <!-- 设置按钮 -->
+                <button class="settings-btn" data-tab="settings">
+                    <i data-feather="settings"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="app-main">
+            
+            <!-- 下载页面 -->
+            <section id="download-page" class="page-content active">
+                <div class="page-container">
+                    <div class="download-section">
+                        <div class="download-card">
+                            <div class="card-header">
+                                <h2>快速下载YouTube视频</h2>
+                                <p>粘贴YouTube链接，选择质量，开始下载学习资源</p>
+                            </div>
+                            
+                            <div class="download-form">
+                                <!-- URL输入区域 -->
+                                <div class="input-group">
+                                    <label for="video-url">视频链接</label>
+                                    <div class="input-wrapper">
+                                        <textarea 
+                                            id="video-url" 
+                                            placeholder="粘贴YouTube视频链接，支持多个链接（每行一个）"
+                                            rows="3"
+                                        ></textarea>
+                                        <button class="paste-btn" id="paste-btn">
+                                            <i data-feather="clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 质量选择 -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="video-quality">视频质量</label>
+                                        <select id="video-quality">
+                                            <option value="best">最佳质量</option>
+                                            <option value="1080p">1080p</option>
+                                            <option value="720p">720p</option>
+                                            <option value="480p">480p</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="video-format">视频格式</label>
+                                        <select id="video-format">
+                                            <option value="mp4">MP4</option>
+                                            <option value="webm">WebM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- 下载按钮 -->
+                                <button class="download-btn primary-btn" id="start-download">
+                                    <i data-feather="download"></i>
+                                    <span>开始下载</span>
+                                </button>
+                            </div>
+                            
+                            <!-- 视频预览区域 -->
+                            <div class="video-preview" id="video-preview" style="display: none;">
+                                <div class="preview-card">
+                                    <div class="preview-thumbnail">
+                                        <img id="preview-image" src="" alt="视频缩略图">
+                                        <div class="duration-badge" id="preview-duration"></div>
+                                    </div>
+                                    <div class="preview-info">
+                                        <h3 id="preview-title"></h3>
+                                        <p id="preview-channel"></p>
+                                        <div class="preview-stats">
+                                            <span id="preview-views"></span>
+                                            <span id="preview-upload-date"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 队列页面 -->
+            <section id="queue-page" class="page-content">
+                <div class="page-container">
+                    <div class="queue-section">
+                        <div class="section-header">
+                            <h2>下载队列</h2>
+                            <div class="queue-stats">
+                                <span class="stat-item">
+                                    <i data-feather="download"></i>
+                                    进行中: <span id="active-downloads">0</span>
+                                </span>
+                                <span class="stat-item">
+                                    <i data-feather="clock"></i>
+                                    等待中: <span id="pending-downloads">0</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- 整体进度 -->
+                        <div class="overall-progress">
+                            <div class="progress-info">
+                                <span>总体进度</span>
+                                <span id="overall-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="overall-progress-fill"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 队列列表 -->
+                        <div class="queue-list" id="queue-list">
+                            <!-- 队列项目将通过JavaScript动态生成 -->
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i data-feather="inbox"></i>
+                                </div>
+                                <h3>队列为空</h3>
+                                <p>还没有下载任务，去添加一些视频吧！</p>
+                                <button class="secondary-btn" onclick="showPage('download')">
+                                    <i data-feather="plus"></i>
+                                    添加下载
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 历史记录页面 -->
+            <section id="history-page" class="page-content">
+                <div class="page-container">
+                    <div class="history-section">
+                        <div class="section-header">
+                            <h2>下载历史</h2>
+                            <div class="history-controls">
+                                <div class="search-box">
+                                    <i data-feather="search"></i>
+                                    <input type="text" id="history-search" placeholder="搜索历史记录...">
+                                </div>
+                                <select id="history-filter">
+                                    <option value="all">全部</option>
+                                    <option value="today">今天</option>
+                                    <option value="week">本周</option>
+                                    <option value="month">本月</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 历史统计 -->
+                        <div class="history-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i data-feather="download"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="total-downloads">0</span>
+                                    <span class="stat-label">总下载数</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i data-feather="hard-drive"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="total-size">0 MB</span>
+                                    <span class="stat-label">总大小</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i data-feather="calendar"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="this-month">0</span>
+                                    <span class="stat-label">本月下载</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 历史列表 -->
+                        <div class="history-list" id="history-list">
+                            <!-- 历史项目将通过JavaScript动态生成 -->
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i data-feather="clock"></i>
+                                </div>
+                                <h3>暂无历史记录</h3>
+                                <p>开始下载一些视频，建立你的学习资料库吧！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 设置页面 -->
+            <section id="settings-page" class="page-content">
+                <div class="page-container">
+                    <div class="settings-section">
+                        <h2>应用设置</h2>
+                        
+                        <div class="settings-groups">
+                            <!-- 下载设置 -->
+                            <div class="settings-group">
+                                <h3>下载设置</h3>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>默认下载路径</label>
+                                        <p>选择视频文件的保存位置</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="download-path" value="~/Downloads" readonly>
+                                        <button class="secondary-btn" id="choose-path">选择</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>默认视频质量</label>
+                                        <p>新下载任务的默认质量选项</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="default-quality">
+                                            <option value="best">最佳质量</option>
+                                            <option value="1080p">1080p</option>
+                                            <option value="720p">720p</option>
+                                            <option value="480p">480p</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>同时下载数量</label>
+                                        <p>允许同时进行的下载任务数量</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="concurrent-downloads">
+                                            <option value="1">1个</option>
+                                            <option value="2">2个</option>
+                                            <option value="3" selected>3个</option>
+                                            <option value="4">4个</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 界面设置 -->
+                            <div class="settings-group">
+                                <h3>界面设置</h3>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>主题模式</label>
+                                        <p>选择应用的外观主题</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="theme-mode">
+                                            <option value="light">浅色模式</option>
+                                            <option value="dark">深色模式</option>
+                                            <option value="auto">跟随系统</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>显示动画</label>
+                                        <p>启用界面过渡和加载动画</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="enable-animations" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 高级设置 -->
+                            <div class="settings-group">
+                                <h3>高级设置</h3>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>自动重试次数</label>
+                                        <p>下载失败时的自动重试次数</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="retry-count">
+                                            <option value="1">1次</option>
+                                            <option value="2">2次</option>
+                                            <option value="3" selected>3次</option>
+                                            <option value="5">5次</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label>历史记录保留</label>
+                                        <p>历史记录的保存天数</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="history-retention">
+                                            <option value="30">30天</option>
+                                            <option value="60">60天</option>
+                                            <option value="90" selected>90天</option>
+                                            <option value="180">180天</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 设置操作 -->
+                        <div class="settings-actions">
+                            <button class="secondary-btn" id="reset-settings">
+                                <i data-feather="rotate-ccw"></i>
+                                恢复默认设置
+                            </button>
+                            <button class="primary-btn" id="save-settings">
+                                <i data-feather="save"></i>
+                                保存设置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页面底部 -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="status-info">
+                    <span class="status-item">
+                        <i data-feather="activity"></i>
+                        状态: <span id="app-status">就绪</span>
+                    </span>
+                    <span class="status-item">
+                        <i data-feather="download"></i>
+                        下载: <span id="download-count">0</span>
+                    </span>
+                </div>
+                <div class="copyright">
+                    <p>© 2025 YouTube学习下载器 - 仅供个人学习研究使用</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast通知容器 -->
+    <div id="toast-container"></div>
+
+    <!-- 加载JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
